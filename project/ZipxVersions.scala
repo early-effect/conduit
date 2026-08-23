@@ -10,16 +10,16 @@ object MyVersions extends ZipxVersions:
   val zioTest     = zio.mod("zio-test").test
   val zioTestSbt  = zio.mod("zio-test-sbt").test
 
-  val scalaJavaTime     = Lib("io.github.cquiroz", "scala-java-time", "2.6.0")
+  val scalaJavaTime     = Lib("io.github.cquiroz", "scala-java-time", "2.7.0")
   val scalaJavaTimeTzdb = scalaJavaTime.mod("scala-java-time-tzdb")
 
-  val specular        = Lib("rocks.earlyeffect", "specular-core", "0.14.0")
+  val specular        = Lib("rocks.earlyeffect", "specular-core", "0.14.1")
   val specularZioTest = specular.mod("specular-zio-test").test
   val specularSite    = specular.mod("specular-site").test
   val specularTheme   = specular.mod("early-effect-docs-theme").test
   val specularMermoid = specular.mod("specular-mermoid")
 
-  val ascent        = Lib("rocks.earlyeffect", "ascent-core", "0.4.1")
+  val ascent        = Lib("rocks.earlyeffect", "ascent-core", "0.5.0")
   val ascentCss     = ascent.mod("ascent-css")
   val ascentHtml    = ascent.mod("ascent-html").test
   val ascentJs      = ascent.mod("ascent-js")
@@ -29,10 +29,10 @@ object MyVersions extends ZipxVersions:
 
   val scalajs        = Plugin("org.scala-js", "sbt-scalajs", "1.22.0")
   val scalaNative    = Plugin("org.scala-native", "sbt-scala-native", "0.5.12")
-  val scalafmt       = Plugin("org.scalameta", "sbt-scalafmt", "2.6.1")
+  val scalafmt       = Plugin("org.scalameta", "sbt-scalafmt", "2.6.2")
   val scalafix       = Plugin("ch.epfl.scala", "sbt-scalafix", "0.14.7")
   val dynver         = Plugin("com.github.sbt", "sbt-dynver", "5.1.1")
-  val specularPlugin = Plugin("rocks.earlyeffect", "sbt-specular", "0.14.0")
+  val specularPlugin = Plugin("rocks.earlyeffect", "sbt-specular", "0.14.1")
   val sbtReload      = Plugin("com.jamesward", "sbt-reload", "0.0.7")
 
   def zioLib   = library(zio, zioStreams)
