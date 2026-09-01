@@ -416,7 +416,7 @@ Contributions are welcome! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for gui
 
 ## License
 
-Copyright 2025 Russ White
+Copyright Russell White
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this code except in compliance with the License.
