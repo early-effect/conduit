@@ -62,10 +62,12 @@ zipxEnv              := Map(
 zipxCapabilities ++= {
   val upstream = JobCondition.repositoryIs("early-effect/conduit")
   Seq(
-    ZipxCentral.release.withCondition(upstream),
+    ZipxCentral.snapshots.andCondition(upstream),
+    ZipxCentral.pullRequestSnapshots("snapshots"),
     ZipxDocs.pages().andCondition(upstream),
   )
 }
+zipxReleaseWorkflow := Some(ZipxCentral.releases)
 
 lazy val commonSettings = Seq(
   scalacOptions ++= Seq(

@@ -5,6 +5,8 @@ object MyVersions extends ZipxVersions:
   val sbt: SbtVersion     = SbtVersion("2.1.0-M3")
   val scala: ScalaVersion = ScalaVersion("3.9.0")
 
+  val release = ShipGroup("conduit", "0.0.8")("core")
+
   val zio         = Lib("dev.zio", "zio", "2.1.26")
   val zioStreams  = zio.mod("zio-streams")
   val zioTest     = zio.mod("zio-test").test
@@ -31,7 +33,6 @@ object MyVersions extends ZipxVersions:
   val scalaNative    = Plugin("org.scala-native", "sbt-scala-native", "0.5.12")
   val scalafmt       = Plugin("org.scalameta", "sbt-scalafmt", "2.6.1")
   val scalafix       = Plugin("ch.epfl.scala", "sbt-scalafix", "0.14.7")
-  val dynver         = Plugin("com.github.sbt", "sbt-dynver", "5.1.1")
   val specularPlugin = Plugin("rocks.earlyeffect", "sbt-specular", "0.14.0")
   val sbtReload      = Plugin("com.jamesward", "sbt-reload", "0.0.7")
 
