@@ -12,7 +12,7 @@ object MyVersions extends ZipxVersions:
   val zioTest     = zio.mod("zio-test").test
   val zioTestSbt  = zio.mod("zio-test-sbt").test
 
-  val scalaJavaTime     = Lib("io.github.cquiroz", "scala-java-time", "2.6.0")
+  val scalaJavaTime     = Lib("io.github.cquiroz", "scala-java-time", "2.7.0")
   val scalaJavaTimeTzdb = scalaJavaTime.mod("scala-java-time-tzdb")
 
   val specular        = Lib("rocks.earlyeffect", "specular-core", "0.14.0")
