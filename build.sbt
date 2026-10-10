@@ -173,7 +173,11 @@ lazy val docs = (projectMatrix in file("docs"))
           specularMetaProject    := Some(LocalProject("core")),
           specularArtifactKind   := "library",
           specularSiteDirectory  := (ThisBuild / baseDirectory).value / "target" / "site",
-          specularDisplayVersion := stripCi,
+          // A dynver distance is 0.0.8-ci. stripCi would advertise 0.0.8, which is not on Central.
+          specularDisplayVersion := { raw =>
+            if raw.contains("-ci") || raw.contains("+") || raw.contains("SNAPSHOT") then "0.0.7"
+            else raw
+          },
           specularJsLink    := linkDocsClient.value,
           specularJsLinkDev := linkDocsClient.value,
           specularJsProject := Some(LocalProject("docsJS")),

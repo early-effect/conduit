@@ -57,7 +57,7 @@ count changed.
     section("Install")(
       md"""
 ```scala
-libraryDependencies += "rocks.earlyeffect" %% "conduit" % "<version>"
+libraryDependencies += "rocks.earlyeffect" %% "conduit" % "0.0.7"
 ```
 
 Use `%%%` on Scala.js or Native. These live widgets use
