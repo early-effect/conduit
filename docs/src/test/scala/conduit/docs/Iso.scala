@@ -4,8 +4,9 @@ import _root_.conduit.*
 import _root_.conduit.Iso.*
 import ascent.*
 import ascent.dsl.*
+import mermoid.Mermaid
+import mermoid.ascent.MermoidAscent
 import specular.*
-import specular.mermoid.Mermoid
 import zio.test.*
 
 object IsoPage extends DocSpec:
@@ -27,10 +28,10 @@ object IsoPage extends DocSpec:
         m => zio.ZIO.succeed(ActionResult(asStr.set(m, s)))
 
   private val round =
-    """flowchart LR
+    Mermaid("""flowchart LR
       |  Int[Int field] -->|toString| Str[String focus]
       |  Str -->|toInt| Int
-      |""".stripMargin
+      |""".stripMargin)
 
   def doc = page("Iso")(
     md"""
@@ -52,8 +53,8 @@ val asStr    = Optics[Box](_.n).imap(intToStr)
 ```
 """,
       example {
-        Mermoid.diagram(round)
-      }.assert(ui => assertTrue(ui != null)),
+        MermoidAscent.diagram(round)
+      }.assert(ui => assertTrue(ui.toString.contains("Int field"), ui.toString.contains("String focus"))),
       exampleValue {
         val box = Box(42)
         (asStr.get(box), asStr.set(box, "100").n)
@@ -94,8 +95,8 @@ The model is `Box(n: Int)`. Buttons write through the iso (`SetStr`) or the raw 
 need a pipeline; Conduit only ships `imap` on one lens.
 """,
       exampleIO {
-        Mermoid.diagramInteractive(round, initialWidth = 480)
-      }.interactive,
+        MermoidAscent.diagramInteractive(round, initialWidth = 480)
+      }.interactive.assert(ui => assertTrue(ui.toString.contains("mermoid-ascent"))),
     ),
   )
 end IsoPage

@@ -26,7 +26,7 @@ sbt "core/testFull"                  # library only
 sbt "testOnly conduit.LensSpec"      # one suite
 sbt "example/run"                    # JVM demo
 sbt docs/specularSite                # build the docs site (links docsJS)
-sbt docsPreview                      # ~docs/specularPreview
+sbt docsPreview                      # docs/specularPreview (watch is inside the task; do not prefix ~)
 sbt zipxWorkflowGenerate             # after zipx settings / graph changes
 sbt zipxWorkflowCheck                # CI drift gate
 ```
@@ -63,10 +63,11 @@ Prefer a new handler combinator, lens helper, FastEq factory, or `ConduitOp` ove
 
 ## Docs
 
-Specular DocSpecs under [`docs/src/test/scala/conduit/docs/`](docs/src/test/scala/conduit/docs/). JVM builds the site; `docsJS` remounts `.interactive` examples (`ClientMain` + `ExampleRegistry`). Diagrams: mermaid fences and `specular.mermoid.Mermoid` (not pasted SVG).
+Specular DocSpecs under [`docs/src/test/scala/conduit/docs/`](docs/src/test/scala/conduit/docs/). JVM builds the site; `docsJS` remounts `.interactive` examples through `SpecularClient.fromPages`. Diagrams are `mermoid-ascent` (not pasted SVG).
 
 - Shared `DocSpec` pages (JS-safe) + thin JVM `DocSpecSuite` wrappers.
-- After adding a `.interactive` example, it must appear in `ClientMain`'s page list; `InteractiveContractSpec` guards drift.
+- The JS client is `SpecularClient.fromPages(DocPages.all*)`. `InteractiveContractSpec` checks those keys against the site.
+- Diagrams are `Mermaid("""...""")` painted by `mermoid-ascent` (docs-only, not on the published artifact).
 - `specularJsLink` writes `target/specular-client-js.path`; `BuildSite.afterBuild` copies `assets/client.js`.
 - Do not revive marklit or commit `docs-generated/`.
 

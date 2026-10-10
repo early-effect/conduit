@@ -3,8 +3,9 @@ package conduit.docs
 import _root_.conduit.*
 import ascent.*
 import ascent.dsl.*
+import mermoid.Mermaid
+import mermoid.ascent.MermoidAscent
 import specular.*
-import specular.mermoid.Mermoid
 import zio.*
 import zio.test.*
 
@@ -39,12 +40,12 @@ object Handlers extends DocSpec:
         m => ZIO.succeed(ActionResult(lens.set(m, m.count + 1), Op.Inc))
 
   private val composeDiag =
-    """flowchart TB
+    Mermaid("""flowchart TB
       |  Act[Action] --> OrElse["h1 >> h2 first match"]
       |  Act --> Fold["h1 ++ h2 both match"]
       |  Fold --> D[dirty OR]
       |  Fold --> N[next concatenated]
-      |""".stripMargin
+      |""".stripMargin)
 
   def doc = page("Handlers")(
     md"""
@@ -72,8 +73,8 @@ increments once in the handler and returns `Inc` as `ActionResult.next`, so one 
 two dispatches.
 """,
       example {
-        Mermoid.diagram(composeDiag)
-      }.assert(ui => assertTrue(ui != null)),
+        MermoidAscent.diagram(composeDiag)
+      }.assert(ui => assertTrue(ui.toString.contains("first match"), ui.toString.contains("dirty OR"))),
       exampleIO {
         for
           (_, ctx) <- DocsRuntime.live(State(0, "x"))(focused)
@@ -105,8 +106,8 @@ the right. `++` (`fold`) runs **both** when they match the same action. The seco
 first's model; `next` concatenates; `dirty` is OR so `update ++ noChange` still notifies.
 """,
       exampleIO {
-        Mermoid.diagramInteractive(composeDiag, initialWidth = 560)
-      }.interactive,
+        MermoidAscent.diagramInteractive(composeDiag, initialWidth = 560)
+      }.interactive.assert(ui => assertTrue(ui.toString.contains("mermoid-ascent"))),
     ),
     section("Unhandled and errors")(
       md"""

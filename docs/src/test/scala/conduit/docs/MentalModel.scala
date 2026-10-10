@@ -1,23 +1,24 @@
 package conduit.docs
 
+import mermoid.Mermaid
+import mermoid.ascent.MermoidAscent
 import specular.*
-import specular.mermoid.Mermoid
 import zio.test.*
 
 object MentalModel extends DocSpec:
 
   private val runModes =
-    """flowchart TB
+    Mermaid("""flowchart TB
       |  Enq["c(action)"] --> Q[Queue]
       |  Q --> Drain["run() drain to empty"]
       |  Q --> Live["run(false) until Done"]
       |  Drain --> Idle[Return]
       |  Live --> Wait[Block on queue]
       |  Wait --> Live
-      |""".stripMargin
+      |""".stripMargin)
 
   private val skip =
-    """flowchart TB
+    Mermaid("""flowchart TB
       |  Act[Action] --> H[Handler]
       |  H --> Dirty{dirty and model FastEq?}
       |  Dirty -->|no| SkipAll[Skip every listener]
@@ -25,16 +26,16 @@ object MentalModel extends DocSpec:
       |  Each --> Slice{slice FastEq?}
       |  Slice -->|equal| Quiet[No callback]
       |  Slice -->|changed| Fire[listener effect]
-      |""".stripMargin
+      |""".stripMargin)
 
   private val follow =
-    """flowchart LR
+    Mermaid("""flowchart LR
       |  A[Action] --> H[Handler]
       |  H --> M[New model]
       |  H --> N[next]
       |  N --> H2[Nested dispatch]
       |  H2 --> M
-      |""".stripMargin
+      |""".stripMargin)
 
   def doc = page("Mental model")(
     md"""
@@ -49,11 +50,11 @@ use `run(false)` and eventually `Done`. A completed `forkDaemon` can be reaped; 
 on a scope (`forkScoped`) or on the main fiber.
 """,
       example {
-        Mermoid.diagram(runModes)
-      }.assert(ui => assertTrue(ui != null)),
+        MermoidAscent.diagram(runModes)
+      }.assert(ui => assertTrue(ui.toString.contains("drain to empty"))),
       exampleIO {
-        Mermoid.diagramInteractive(runModes, initialWidth = 640)
-      }.interactive,
+        MermoidAscent.diagramInteractive(runModes, initialWidth = 640)
+      }.interactive.assert(ui => assertTrue(ui.toString.contains("mermoid-ascent"))),
     ),
     section("Two FastEq gates")(
       md"""
@@ -62,8 +63,8 @@ even asked. If the model changed, each listener compares **its slice** to the la
 A listener on `_.label` does not run when only `_.count` moved.
 """,
       example {
-        Mermoid.diagram(skip)
-      }.assert(ui => assertTrue(ui != null)),
+        MermoidAscent.diagram(skip)
+      }.assert(ui => assertTrue(ui.toString.contains("Skip every listener"))),
     ),
     section("Follow-ups are nested")(
       md"""
@@ -71,11 +72,11 @@ A listener on `_.label` does not run when only `_.count` moved.
 returns `Inc` as follow-up becomes two handler runs in one `c(IncTwice)` + `run()`.
 """,
       example {
-        Mermoid.diagram(follow)
-      }.assert(ui => assertTrue(ui != null)),
+        MermoidAscent.diagram(follow)
+      }.assert(ui => assertTrue(ui.toString.contains("Nested dispatch"))),
       exampleIO {
-        Mermoid.diagramInteractive(follow, initialWidth = 640)
-      }.interactive,
+        MermoidAscent.diagramInteractive(follow, initialWidth = 640)
+      }.interactive.assert(ui => assertTrue(ui.toString.contains("mermoid-ascent"))),
     ),
   )
 end MentalModel

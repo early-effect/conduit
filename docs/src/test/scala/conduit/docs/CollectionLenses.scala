@@ -4,8 +4,9 @@ import _root_.conduit.*
 import _root_.conduit.CollectionLens.*
 import ascent.*
 import ascent.dsl.*
+import mermoid.Mermaid
+import mermoid.ascent.MermoidAscent
 import specular.*
-import specular.mermoid.Mermoid
 import zio.test.*
 
 object CollectionLenses extends DocSpec:
@@ -32,11 +33,11 @@ object CollectionLenses extends DocSpec:
         m => zio.ZIO.succeed(ActionResult(cell.set(m, None)))
 
   private val coll =
-    """flowchart LR
+    Mermaid("""flowchart LR
       |  List[List at index] --> Opt[Option V]
       |  Vec[Vector atVector] --> Opt
       |  Map[Map key k] --> Opt
-      |""".stripMargin
+      |""".stripMargin)
 
   def doc = page("Collection lenses")(
     md"""
@@ -58,8 +59,8 @@ milk.set(board, Some(t))   // upsert
 ```
 """,
       example {
-        Mermoid.diagram(coll)
-      }.assert(ui => assertTrue(ui != null)),
+        MermoidAscent.diagram(coll)
+      }.assert(ui => assertTrue(ui.toString.contains("atVector"), ui.toString.contains("Option V"))),
       exampleValue {
         val milk  = Optics[Board](_.todos).key("milk")
         val start = Board(Map("milk" -> Todo("buy milk", false)))
@@ -104,8 +105,8 @@ Same `Option` protocol on `List` and `Vector`. `at(length)` with `Some(v)` appen
 how a lawful "write past the end" still satisfies set-get at that index.
 """,
       exampleIO {
-        Mermoid.diagramInteractive(coll, initialWidth = 560)
-      }.interactive,
+        MermoidAscent.diagramInteractive(coll, initialWidth = 560)
+      }.interactive.assert(ui => assertTrue(ui.toString.contains("mermoid-ascent"))),
     ),
   )
 end CollectionLenses

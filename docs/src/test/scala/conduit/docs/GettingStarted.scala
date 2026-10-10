@@ -3,8 +3,9 @@ package conduit.docs
 import _root_.conduit.*
 import ascent.*
 import ascent.dsl.*
+import mermoid.Mermaid
+import mermoid.ascent.MermoidAscent
 import specular.*
-import specular.mermoid.Mermoid
 import zio.*
 import zio.test.*
 
@@ -35,13 +36,27 @@ object GettingStarted extends DocSpec:
       case CounterAction.Set(v) => focus(_.count)(updated(v))
 
   private val pieces =
-    """flowchart TB
+    Mermaid("""flowchart TB
       |  M[Model] --> C[Conduit]
       |  A[Actions] --> Q[Queue]
       |  Q --> H[Handler]
       |  H --> M
       |  C --> Q
-      |""".stripMargin
+      |""".stripMargin)
+
+  /** Live counter shared with the overview. One `Conduit.make`, not a `Ref` in the view. */
+  def liveCounter: URIO[Scope, ascent.ast.UI[Any]] =
+    for
+      conduit <- ZIO.succeed(Conduit.make(CounterState(0, Nil))(countHandler))
+      ctx = conduit.ctx
+      _     <- conduit.run(false).forkScoped
+      count <- ctx.squawk(_.count)
+    yield E.div(
+      E.button(Events.onClick(_ => ctx(CounterAction.Dec)), "−"),
+      E.span(" ", count.map(_.toString), " "),
+      E.button(Events.onClick(_ => ctx(CounterAction.Inc)), "+"),
+      E.button(Events.onClick(_ => ctx(CounterAction.Reset)), "Reset"),
+    )
 
   def doc = page("Getting started")(
     md"""
@@ -69,8 +84,8 @@ val countHandler: ActionHandler[CounterState, Int, Nothing] =
 ```
 """,
       example {
-        Mermoid.diagram(pieces)
-      }.assert(ui => assertTrue(ui != null)),
+        MermoidAscent.diagram(pieces)
+      }.assert(ui => assertTrue(ui.toString.contains("Conduit"), ui.toString.contains("Handler"))),
     ),
     section("Dispatch is enqueue, then run")(
       md"""
@@ -89,21 +104,13 @@ the final model.
     ),
     section("Live counter")(
       md"""
-The widget below is a real `Conduit` with `run(false)` forked for the example scope, exposed to
-the view as `Ctx` from **ascent-conduit** (docs-only). `ctx(Inc)` enqueues; the loop applies it;
-`ctx.squawk(_.count)` patches the text node. Use `−` / `+` / Reset.
+The widget below is `liveCounter`: `Conduit.make`, `run(false)` forked for the example scope,
+and `Ctx` from **ascent-conduit** (docs-only). The overview mounts the same effect. `ctx(Inc)`
+enqueues; the loop applies it; `ctx.squawk(_.count)` patches the text node. Use `−` / `+` / Reset.
 """,
       exampleIO {
-        for
-          (_, ctx) <- DocsRuntime.live(CounterState(0, Nil))(countHandler)
-          count    <- ctx.squawk(_.count)
-        yield E.div(
-          E.button(Events.onClick(_ => ctx(CounterAction.Dec)), "−"),
-          E.span(" ", count.map(_.toString), " "),
-          E.button(Events.onClick(_ => ctx(CounterAction.Inc)), "+"),
-          E.button(Events.onClick(_ => ctx(CounterAction.Reset)), "Reset"),
-        )
-      }.interactive,
+        liveCounter
+      }.interactive.assert(ui => assertTrue(ui.toString.contains("Reset"))),
     ),
     section("focus per case")(
       md"""

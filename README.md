@@ -1,5 +1,8 @@
 # Conduit
-A unidirectional state management library for Scala 3 utilizing ZIO
+
+Actions go in, a handler returns the next model, and a listener runs only when FastEq says its slice changed.
+
+**[Docs](https://www.earlyeffect.rocks/conduit)** (`sbt docsPreview` locally)
 
 [![Maven Central](https://img.shields.io/maven-central/v/rocks.earlyeffect/conduit_3.svg)](https://mvnrepository.com/artifact/rocks.earlyeffect/conduit_3)
 
