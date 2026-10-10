@@ -3,32 +3,17 @@ package conduit.docs
 import specular.*
 import zio.test.*
 
-/** Interactive ids from the site map must be registered for the JS client. */
+/** The JS client remounts every key the site declares. `ClientMain` passes `DocPages.all`. */
 object InteractiveContractSpec extends ZIOSpecDefault:
 
-  private val pages = DocPages.all
-
   def spec = suite("Interactive contract")(
-    test("every .interactive example is in ExampleRegistry for DocsSite pages") {
-      val registry       = ExampleRegistry.fromPages(pages*)
-      val interactiveIds = pages.flatMap(collectInteractiveIds)
+    test("the site's mount keys are the pages the client remounts") {
+      val keys = DocMounts.keys(DocPages.all*)
       assertTrue(
-        interactiveIds.nonEmpty,
-        interactiveIds.forall(registry.contains),
-        registry.keySet == interactiveIds.toSet,
+        keys.nonEmpty,
+        keys == DocMounts.keys(BuildSite.pages*),
+        DocMounts.domKeys(DocPages.all*).isEmpty,
       )
-    },
-    test("ClientMain and BuildSite share DocPages.all") {
-      assertTrue(pages.nonEmpty)
-    },
+    }
   )
-
-  private def collectInteractiveIds(page: DocPage): Vector[String] =
-    def go(nodes: Vector[DocNode]): Vector[String] =
-      nodes.flatMap {
-        case ex: Example[?] if ex.isInteractive => Vector(ex.id)
-        case Section(_, kids)                   => go(kids)
-        case _                                  => Vector.empty
-      }
-    go(page.children)
 end InteractiveContractSpec

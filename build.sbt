@@ -83,14 +83,32 @@ lazy val publishSettings = Seq(
 )
 
 val docsDogfoodSchemes = Seq(
-  "io.github.russwyte" % "conduit_3"      % "always",
-  "io.github.russwyte" % "conduit_sjs1_3" % "always",
-  "rocks.earlyeffect"  % "conduit_3"      % "always",
-  "rocks.earlyeffect"  % "conduit_sjs1_3" % "always",
+  "io.github.russwyte" % "conduit_3"                 % "always",
+  "io.github.russwyte" % "conduit_sjs1_3"            % "always",
+  "rocks.earlyeffect"  % "conduit_3"                 % "always",
+  "rocks.earlyeffect"  % "conduit_sjs1_3"            % "always",
+  // ascent-conduit 0.9.0 was published against ascent-core 0.9.0. Ctx is unchanged;
+  // the docs client forces the mermoid-ascent line (core 0.10.1, dom-types 0.11.1).
+  "rocks.earlyeffect"  % "ascent-core_3"             % "always",
+  "rocks.earlyeffect"  % "ascent-core_sjs1_3"        % "always",
+  "rocks.earlyeffect"  % "ascent-dom-types_3"        % "always",
+  "rocks.earlyeffect"  % "ascent-dom-types_sjs1_3"   % "always",
+  "rocks.earlyeffect"  % "ascent-css_3"              % "always",
+  "rocks.earlyeffect"  % "ascent-css_sjs1_3"         % "always",
 )
 
-lazy val specularPreview =
-  taskKey[Unit]("Build specularSite then serve with sbt-reload (prefer alias: docsPreview)")
+/** Fast-link the docs client and record where `BuildSite` finds it. */
+lazy val linkDocsClient = Def.uncached(Def.task {
+  (LocalProject("docsJS") / Compile / fastLinkJS).value
+  val outDir = (LocalProject("docsJS") / Compile / fastLinkJSOutput).value
+  val mainJs = outDir / "main.js"
+  if (!mainJs.exists)
+    sys.error(
+      s"Expected $mainJs after fastLinkJS; directory contains: " +
+        Option(outDir.list).toSeq.flatten.mkString(", ")
+    )
+  IO.write((ThisBuild / baseDirectory).value / "target" / "specular-client-js.path", mainJs.getAbsolutePath)
+})
 
 lazy val root = (project in file("."))
   .aggregate(core.projectRefs ++ example.projectRefs ++ docs.projectRefs*)
@@ -151,41 +169,18 @@ lazy val docs = (projectMatrix in file("docs"))
       p.enablePlugins(SpecularPlugin)
         .settings(MyVersions.docsJvm)
         .settings(
-          Test / mainClass       := Some("specular.site.DocsServe"),
-          Test / run / mainClass := (Test / mainClass).value,
-          Test / runReloadArgs   := Seq(specularPort.value.toString),
-          Test / run / javaOptions ++= {
-            val dir = specularSiteDirectory.value.getAbsolutePath
-            Seq(
-              s"-Dspecular.site.dir=$dir",
-              s"-Dspecular.site.port=${specularPort.value}",
-            )
+          specularBuildMain      := "conduit.docs.BuildSite",
+          specularMetaProject    := Some(LocalProject("core")),
+          specularArtifactKind   := "library",
+          specularSiteDirectory  := (ThisBuild / baseDirectory).value / "target" / "site",
+          // A dynver distance is 0.0.8-ci. stripCi would advertise 0.0.8, which is not on Central.
+          specularDisplayVersion := { raw =>
+            if raw.contains("-ci") || raw.contains("+") || raw.contains("SNAPSHOT") then "0.0.7"
+            else raw
           },
-          specularBuildMain        := "conduit.docs.BuildSite",
-          specularMetaProject      := Some(LocalProject("core")),
-          specularArtifactKind     := "library",
-          specularSiteDirectory    := (ThisBuild / baseDirectory).value / "target" / "site",
-          specularDisplayVersion   := stripCi,
-          specularJsLink := Def
-            .uncached(Def.task {
-              (LocalProject("docsJS") / Compile / fastLinkJS).value
-              val outDir = (LocalProject("docsJS") / Compile / fastLinkJSOutput).value
-              val mainJs = outDir / "main.js"
-              if (!mainJs.exists)
-                sys.error(
-                  s"Expected $mainJs after fastLinkJS; directory contains: " +
-                    Option(outDir.list).toSeq.flatten.mkString(", ")
-                )
-              val marker = (ThisBuild / baseDirectory).value / "target" / "specular-client-js.path"
-              IO.write(marker, mainJs.getAbsolutePath)
-            })
-            .value,
-          specularPreview := Def
-            .uncached(Def.task {
-              specularSite.value
-              (Test / runReload).value
-            })
-            .value,
+          specularJsLink    := linkDocsClient.value,
+          specularJsLinkDev := linkDocsClient.value,
+          specularJsProject := Some(LocalProject("docsJS")),
         ),
   )
   .jsPlatform(
@@ -207,4 +202,4 @@ lazy val docs = (projectMatrix in file("docs"))
       ),
   )
 
-addCommandAlias("docsPreview", "~docs/specularPreview")
+addCommandAlias("docsPreview", "docs/specularPreview")

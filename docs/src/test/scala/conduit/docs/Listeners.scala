@@ -3,8 +3,9 @@ package conduit.docs
 import _root_.conduit.*
 import ascent.*
 import ascent.dsl.*
+import mermoid.Mermaid
+import mermoid.ascent.MermoidAscent
 import specular.*
-import specular.mermoid.Mermoid
 import zio.*
 import zio.test.*
 
@@ -24,14 +25,14 @@ object Listeners extends DocSpec:
       case Op.SetLabel(lbl) => focus(_.label)(updated(lbl))
 
   private val slice =
-    """flowchart LR
+    Mermaid("""flowchart LR
       |  M[Model] --> C[count listener]
       |  M --> L[label listener]
       |  Inc[Inc] --> M
       |  Lab[SetLabel] --> M
       |  Inc -.-> C
       |  Lab -.-> L
-      |""".stripMargin
+      |""".stripMargin)
 
   def doc = page("Listeners")(
     md"""
@@ -45,8 +46,8 @@ listener as a follow-up.
 Changing `label` does not fire a `_.count` listener. The timeline below only records count.
 """,
       example {
-        Mermoid.diagram(slice)
-      }.assert(ui => assertTrue(ui != null)),
+        MermoidAscent.diagram(slice)
+      }.assert(ui => assertTrue(ui.toString.contains("count listener"))),
       exampleZIO {
         for
           c    <- Conduit(S(0, "x"))(handler)
@@ -86,8 +87,8 @@ A handler can return `Subscribe(listener)` in `ActionResult.next`. Until that op
 callback never fires. `c.unsubscribe(listener)` removes it; there is also an `Unsubscribe` op.
 """,
       exampleIO {
-        Mermoid.diagramInteractive(slice, initialWidth = 640)
-      }.interactive,
+        MermoidAscent.diagramInteractive(slice, initialWidth = 640)
+      }.interactive.assert(ui => assertTrue(ui.toString.contains("mermoid-ascent"))),
     ),
   )
 end Listeners
