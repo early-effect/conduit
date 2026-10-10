@@ -1,33 +1,16 @@
 package conduit.docs
 
-import ascent.*
-import ascent.dom
+import specular.client.SpecularClient
 import zio.*
 
-/** Browser entry: mount each interactive example into its SSR `#<page-slug>-ex-N` wrapper. */
+/** Browser entry: remount every `.interactive` example on the current page.
+  *
+  * One `ZIO.scoped` is the page lifetime, so a `Conduit` forked inside an example stays alive.
+  * `InteractiveContractSpec` checks these pages against the site map.
+  */
 object ClientMain extends ZIOAppDefault:
 
-  def run =
-    val examples = ExampleRegistry.fromPages(DocPages.all*)
-    for
-      _ <- ZIO.foreachDiscard(examples.toList) { case (id, body) =>
-        mountExample(id, body)
-      }
-      _ <- ZIO.never
-    yield ()
-  end run
-
-  private def mountExample(id: String, body: URIO[Scope, ascent.ast.UI[Any]]): UIO[Unit] =
-    val el = Dom.document.getElementById(id)
-    if el == null then ZIO.unit
-    else
-      for
-        _  <- ZIO.succeed(clearChildren(el))
-        ui <- ZIO.scoped(body)
-        _  <- AscentApp.mount(ui, el)
-      yield ()
-  end mountExample
-
-  private def clearChildren(el: dom.Element): Unit =
-    el.innerHTML = ""
+  def run = ZIO.scoped {
+    SpecularClient.mountAll(SpecularClient.fromPages(DocPages.all*)) *> ZIO.never
+  }
 end ClientMain

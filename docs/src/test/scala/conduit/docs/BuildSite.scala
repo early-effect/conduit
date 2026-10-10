@@ -4,37 +4,35 @@ import earlyeffect.docs.EarlyEffectTheme
 import specular.site.*
 import zio.*
 
-import java.nio.file.{Files, Path, Paths, StandardCopyOption}
+import java.nio.file.{Files, Path, Paths}
+import scala.jdk.OptionConverters.*
 
 /** Docs-as-tests site builder (Test classpath; `docs/specularSite`). */
 object BuildSite extends DocsSite:
 
   def pages = DocPages.all
 
-  override def site: SiteModel =
-    val m       = meta
-    val branded = EarlyEffectTheme.brand(super.site)
+  override def site(settings: DocsSettings): SiteModel =
+    val m       = settings.meta
+    val branded = EarlyEffectTheme.brand(super.site(settings))
     branded.copy(
       clientScript = Some("assets/client.js"),
       summaryMarkdown = Some(
-        """**Conduit** is unidirectional state for Scala 3 and ZIO 2: actions, lensed handlers,
-typed effects, and listeners that skip work when FastEq says nothing changed.
+        """Actions go in, a handler returns the next model, and a listener runs only when FastEq says its slice changed.
 
-Cross-built for JVM, Scala.js, and Scala Native. These pages are DocSpecs: examples assert
-under zio-test, diagrams are real mermoid renders, and the live widgets are a Conduit plus
-ascent `Ctx` (docs-only; the published `conduit` artifact does not depend on ascent).
+The dispatch loop and a running counter are on [Overview](overview.html).
 """
       ),
       installSnippets = Vector(
         ArtifactKind.defaultInstall(m, ArtifactKind.Library),
         CodeSnippet(
           "Scala.js / Native",
-          s"""libraryDependencies += "${m.organization}" %%% "${m.name}" % "${m.version}"""",
+          s"""libraryDependencies += "${m.organization}" %%% "${m.name}" % "${m.docsVersion}"""",
         ),
       ),
       brand = Some(
         Brand(
-          name = m.title.getOrElse("conduit"),
+          name = m.displayTitle,
           links = Vector(EarlyEffectTheme.github("https://github.com/early-effect/conduit")),
         )
       ),
@@ -44,23 +42,18 @@ ascent `Ctx` (docs-only; the published `conduit` artifact does not depend on asc
   override def layers: ZLayer[Any, Nothing, SiteBuilder] =
     EarlyEffectTheme.layers
 
-  override def afterBuild(out: Path, result: SiteOutput): Task[Unit] =
+  override def afterBuild(out: Path, result: SiteOutput): IO[SiteError, Unit] =
     val _ = result
     EarlyEffectTheme.writeLogo(out) *> copyClientBundle(out)
 
-  private def copyClientBundle(out: Path): Task[Unit] =
-    ZIO.attempt {
-      val dest = out.resolve("assets/client.js")
-      val src = findClientJs.getOrElse {
-        throw new RuntimeException(
-          "JS client not linked; run docs/specularSite (or docsJS/fastLinkJS) first. " +
-            s"Looked for marker ${clientJsMarker} and under ${repoRoot.resolve("target/out")}"
-        )
+  private def copyClientBundle(out: Path): IO[SiteError, Unit] =
+    ZIO
+      .attemptBlocking(findClientJs)
+      .orElseSucceed(None)
+      .flatMap {
+        case Some(src) => SiteAssets.copyFile(src, out.resolve("assets/client.js"))
+        case None      => ZIO.fail(SiteError.MissingFile(clientJsMarker))
       }
-      Files.createDirectories(dest.getParent)
-      Files.copy(src, dest, StandardCopyOption.REPLACE_EXISTING)
-      ()
-    }
 
   private def clientJsMarker: Path =
     repoRoot.resolve("target/specular-client-js.path")
@@ -72,7 +65,7 @@ ascent `Ctx` (docs-only; the published `conduit` artifact does not depend on asc
     val marker = clientJsMarker
     if !Files.isRegularFile(marker) then None
     else
-      val line = Files.readString(marker).nn.trim
+      val line = Files.readString(marker).trim
       if line.isEmpty then None
       else
         val path = Paths.get(line)
@@ -91,15 +84,14 @@ ascent `Ctx` (docs-only; the published `conduit` artifact does not depend on asc
             s.endsWith("conduit-docs-fastopt/main.js")
           }
           .findFirst()
-        if found.isPresent then Some(found.get.nn) else None
+        found.toScala
       finally stream.close()
     end if
   end walkTargetOut
 
   private def repoRoot: Path =
     Iterator
-      .iterate(Paths.get("").toAbsolutePath.nn)(p => Option(p.getParent).orNull)
-      .takeWhile(_ != null)
+      .unfold(Option(Paths.get("").toAbsolutePath))(_.map(p => (p, Option(p.getParent))))
       .find(p => Files.exists(p.resolve("build.sbt")))
-      .getOrElse(Paths.get("").toAbsolutePath.nn)
+      .getOrElse(Paths.get("").toAbsolutePath)
 end BuildSite

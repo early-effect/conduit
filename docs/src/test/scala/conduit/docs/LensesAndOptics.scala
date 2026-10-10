@@ -1,8 +1,9 @@
 package conduit.docs
 
 import _root_.conduit.*
+import mermoid.Mermaid
+import mermoid.ascent.MermoidAscent
 import specular.*
-import specular.mermoid.Mermoid
 import zio.test.*
 
 object LensesAndOptics extends DocSpec:
@@ -12,11 +13,11 @@ object LensesAndOptics extends DocSpec:
   case class Model(user: User, count: Int) derives Optics
 
   private val compose =
-    """flowchart LR
+    Mermaid("""flowchart LR
       |  M[Model] --> U[user]
       |  U --> A[address]
       |  A --> C[city]
-      |""".stripMargin
+      |""".stripMargin)
 
   def doc = page("Lenses and optics")(
     md"""
@@ -46,8 +47,8 @@ The path must be a chain of field selects. Method calls and `match` are compile 
         assertTrue(from == "NYC", to == "Boston", name == "Ada")
       },
       example {
-        Mermoid.diagram(compose)
-      }.assert(ui => assertTrue(ui != null)),
+        MermoidAscent.diagram(compose)
+      }.assert(ui => assertTrue(ui.toString.contains("address"), ui.toString.contains("city"))),
     ),
     section("What the macro writes")(
       md"""
@@ -74,8 +75,8 @@ new Lens[Model, String]:
         path.get(start)
       }.assert(city => assertTrue(city == "NYC")),
       exampleIO {
-        Mermoid.diagramInteractive(compose, initialWidth = 560)
-      }.interactive,
+        MermoidAscent.diagramInteractive(compose, initialWidth = 560)
+      }.interactive.assert(ui => assertTrue(ui.toString.contains("mermoid-ascent"))),
     ),
     section("Laws")(
       md"""

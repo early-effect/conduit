@@ -15,26 +15,33 @@ object MyVersions extends ZipxVersions:
   val scalaJavaTime     = Lib("io.github.cquiroz", "scala-java-time", "2.7.0")
   val scalaJavaTimeTzdb = scalaJavaTime.mod("scala-java-time-tzdb")
 
-  val specular        = Lib("rocks.earlyeffect", "specular-core", "0.14.0")
+  val specular        = Lib("rocks.earlyeffect", "specular-core", "0.20.0")
   val specularZioTest = specular.mod("specular-zio-test").test
   val specularSite    = specular.mod("specular-site").test
   val specularTheme   = specular.mod("early-effect-docs-theme").test
-  val specularMermoid = specular.mod("specular-mermoid")
 
-  val ascent        = Lib("rocks.earlyeffect", "ascent-core", "0.4.1")
-  val ascentCss     = ascent.mod("ascent-css")
-  val ascentHtml    = ascent.mod("ascent-html").test
-  val ascentJs      = ascent.mod("ascent-js")
-  val ascentConduit = ascent
-    .mod("ascent-conduit")
-    .excluding(ZipxExclude.org("io.github.russwyte"))
+  // Docs-only. Not on the published conduit artifact.
+  // ascent-conduit 0.10.0 is not on Central. 0.9.0 is the published bridge.
+  val mermoidAscent = Lib("rocks.earlyeffect", "mermoid-ascent", "0.2.0")
 
-  val scalajs        = Plugin("org.scala-js", "sbt-scalajs", "1.22.0")
-  val scalaNative    = Plugin("org.scala-native", "sbt-scala-native", "0.5.12")
-  val scalafmt       = Plugin("org.scalameta", "sbt-scalafmt", "2.6.1")
-  val scalafix       = Plugin("ch.epfl.scala", "sbt-scalafix", "0.14.7")
-  val specularPlugin = Plugin("rocks.earlyeffect", "sbt-specular", "0.14.0")
-  val sbtReload      = Plugin("com.jamesward", "sbt-reload", "0.0.7")
+  val ascent     = Lib("rocks.earlyeffect", "ascent-core", "0.10.1")
+  val ascentCss  = ascent.mod("ascent-css")
+  val ascentHtml = Lib("rocks.earlyeffect", "ascent-html", "0.10.0")
+  val ascentJs   = Lib("rocks.earlyeffect", "ascent-js", "0.11.0")
+  val ascentConduit = Lib("rocks.earlyeffect", "ascent-conduit", "0.9.0")
+    .excluding(
+      ZipxExclude.org("io.github.russwyte"),
+      ZipxExclude.org("rocks.earlyeffect", "conduit_3"),
+      ZipxExclude.org("rocks.earlyeffect", "conduit_sjs1_3"),
+      ZipxExclude.org("rocks.earlyeffect", "conduit_native0.5_3"),
+    )
+
+  val scalajs          = Plugin("org.scala-js", "sbt-scalajs", "1.22.0")
+  val scalaNative      = Plugin("org.scala-native", "sbt-scala-native", "0.5.12")
+  val scalafmt         = Plugin("org.scalameta", "sbt-scalafmt", "2.6.1")
+  val scalafix         = Plugin("ch.epfl.scala", "sbt-scalafix", "0.14.7")
+  val specularPlugin   = Plugin("rocks.earlyeffect", "sbt-specular", "0.20.0")
+  val sbtAscentPreview = Plugin("rocks.earlyeffect", "sbt-ascent-preview", "0.10.0")
 
   def zioLib   = library(zio, zioStreams)
   def zioTests = library(zioTest, zioTestSbt)
@@ -47,7 +54,9 @@ object MyVersions extends ZipxVersions:
     specularZioTest,
     specularSite,
     specularTheme,
-    ascentHtml,
+    mermoidAscent.test,
+    ascent.test,
+    ascentHtml.test,
     ascentCss.test,
     ascentConduit.test,
   )
@@ -55,7 +64,8 @@ object MyVersions extends ZipxVersions:
   def docsJs = library(
     zio,
     specular,
-    specularMermoid,
+    mermoidAscent,
+    ascent,
     ascentJs,
     ascentCss,
     ascentConduit,

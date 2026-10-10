@@ -3,8 +3,9 @@ package conduit.docs
 import _root_.conduit.*
 import ascent.*
 import ascent.dsl.*
+import mermoid.Mermaid
+import mermoid.ascent.MermoidAscent
 import specular.*
-import specular.mermoid.Mermoid
 import zio.*
 import zio.test.*
 
@@ -37,7 +38,7 @@ object FastEquality extends DocSpec:
       case VerOp.QuietSet(v) => focus(_.value)(updated(v))
 
   private val gates =
-    """flowchart TB
+    Mermaid("""flowchart TB
       |  H[Handler] --> D{dirty?}
       |  D -->|clean| Skip[Skip all listeners]
       |  D -->|dirty| M{model FastEq}
@@ -45,7 +46,7 @@ object FastEquality extends DocSpec:
       |  M -->|changed| S{slice FastEq}
       |  S -->|equal| Quiet[Skip this listener]
       |  S -->|changed| Fire[Callback]
-      |""".stripMargin
+      |""".stripMargin)
 
   def doc = page("FastEq")(
     md"""
@@ -58,8 +59,8 @@ With no `given`, it is `==` via `FastEq.fromEquals`.
 `Op.NoOp` uses `noChange` (`dirty = false`). The listener on `_.value` fires only for `Inc`.
 """,
       example {
-        Mermoid.diagram(gates)
-      }.assert(ui => assertTrue(ui != null)),
+        MermoidAscent.diagram(gates)
+      }.assert(ui => assertTrue(ui.toString.contains("Skip all listeners"))),
       exampleZIO {
         for
           c     <- Conduit(Counter(0))(handler)
@@ -111,8 +112,8 @@ so a whole-model listener skips. `Bump` notifies once.
         assertTrue(n == 1, v == 99, ver == 1L)
       },
       exampleIO {
-        Mermoid.diagramInteractive(gates, initialWidth = 520)
-      }.interactive,
+        MermoidAscent.diagramInteractive(gates, initialWidth = 520)
+      }.interactive.assert(ui => assertTrue(ui.toString.contains("mermoid-ascent"))),
     ),
     section("Factories")(
       md"""

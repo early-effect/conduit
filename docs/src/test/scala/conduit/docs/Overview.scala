@@ -1,13 +1,15 @@
 package conduit.docs
 
+import _root_.conduit.{ActionHandler, Conduit, FastEq}
+import mermoid.{Mermaid, RenderConfig, ResponsiveConfig, Viewport}
+import mermoid.ascent.MermoidAscent
 import specular.*
-import specular.mermoid.Mermoid
 import zio.test.*
 
 object Overview extends DocSpec:
 
   private val loop =
-    """flowchart LR
+    Mermaid("""flowchart LR
       |  Act[Action] --> Q[Queue]
       |  Q --> Disp[Dispatch]
       |  Disp --> H[Handler]
@@ -17,39 +19,51 @@ object Overview extends DocSpec:
       |  Eq -->|same| Skip[Skip notify]
       |  H --> Next[Follow-ups]
       |  Next --> Disp
-      |""".stripMargin
+      |""".stripMargin)
+
+  /** Below 900px the loop stacks. 420 fits a 390px column and stays full size on a desktop. */
+  private val loopConfig =
+    RenderConfig(responsive = ResponsiveConfig(flipDirectionBelow = Some(900)))
 
   def doc = page("Overview")(
     md"""
-**Conduit** is a Scala 3 / ZIO 2 library for unidirectional state. Actions describe *what happened*.
-Handlers turn those into a new immutable model. Listeners react to slices that actually changed.
-
-It cross-builds for **JVM, Scala.js, and Scala Native**. The docs site is JVM + a Scala.js client
-that remounts the live widgets; the library itself has no UI dependency.
-
-```scala
-libraryDependencies += "rocks.earlyeffect" %% "conduit" % "<version>"
-```
-
-Use `%%%` in a Scala.js or Native build. Pair with
-[ascent-conduit](https://www.earlyeffect.rocks/ascent/) when the host is an ascent UI; that bridge
-is optional and lives in ascent, not here.
+Actions go in, a handler returns the next model, and a listener runs only when FastEq says its slice changed.
 """,
     section("The loop")(
       md"""
 Enqueue is cheap and asynchronous. **Nothing is applied until `run()`**. Follow-ups returned from a
-handler are dispatched immediately (nested), then the loop continues. Click a node in the diagram
-to highlight it.
+handler are dispatched immediately (nested), then the loop continues. Click a node to highlight it.
 """,
       example {
-        Mermoid.diagram(loop)
-      }.assert(ui => assertTrue(ui != null)),
+        MermoidAscent.diagram(loop, config = loopConfig, viewport = Some(Viewport(420)))
+      }.assert(ui => assertTrue(ui.toString.contains("FastEq"), ui.toString.contains("Listeners"))),
       exampleIO {
-        Mermoid.diagramInteractive(loop, initialWidth = 720)
-      }.interactive,
+        MermoidAscent.diagramInteractive(loop, config = loopConfig, initialWidth = 420)
+      }.interactive.assert(ui => assertTrue(ui.toString.contains("mermoid-ascent"), ui.toString.contains("Narrow"))),
     ),
-    section("Four pieces")(
+    section("A running counter")(
       md"""
+The number below is a real `Conduit`, the same widget as [Getting started](getting-started.html).
+`+` enqueues `Inc`. The loop applies the handler, and the listener patches the text only because the
+count changed.
+""",
+      cite(
+        Conduit.make[Int, Nothing](_: Int)(_: ActionHandler[Int, ?, Nothing])(using _: FastEq[Int])
+      ),
+      exampleIO {
+        GettingStarted.liveCounter
+      }.interactive.assert(ui => assertTrue(ui.toString.contains("Reset"), ui.toString.contains("+"))),
+    ),
+    section("Install")(
+      md"""
+```scala
+libraryDependencies += "rocks.earlyeffect" %% "conduit" % "<version>"
+```
+
+Use `%%%` on Scala.js or Native. These live widgets use
+[ascent-conduit](https://www.earlyeffect.rocks/ascent/). That bridge is optional and is not a
+dependency of the published artifact.
+
 | Piece | Job |
 | --- | --- |
 | **Model** | Immutable case class, usually `derives Optics` |
@@ -57,8 +71,8 @@ to highlight it.
 | **Handler** | Partial function from action to `ActionResult` on a lensed slice |
 | **Conduit** | Queue + `Ref` + dispatch loop + listeners |
 
-Read [Getting started](getting-started.html) for a clickable counter, then [Mental model](mental-model.html)
-for how FastEq, follow-ups, and `run` vs `run(false)` fit together.
+Read [Getting started](getting-started.html) for the handler, then [Mental model](mental-model.html)
+for `run` vs `run(false)`.
 """
     ),
   )
