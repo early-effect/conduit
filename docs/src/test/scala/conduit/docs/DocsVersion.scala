@@ -24,3 +24,4 @@ object DocsVersionSpec extends ZIOSpecDefault:
       )
     }
   )
+end DocsVersionSpec
