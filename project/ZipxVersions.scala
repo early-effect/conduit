@@ -7,7 +7,7 @@ object MyVersions extends ZipxVersions:
 
   val release = ShipGroup("conduit", "0.0.8")("core")
 
-  val zio         = Lib("dev.zio", "zio", "2.1.26")
+  val zio         = Lib("dev.zio", "zio", "2.1.27")
   val zioStreams  = zio.mod("zio-streams")
   val zioTest     = zio.mod("zio-test").test
   val zioTestSbt  = zio.mod("zio-test-sbt").test
@@ -21,14 +21,14 @@ object MyVersions extends ZipxVersions:
   val specularTheme   = specular.mod("early-effect-docs-theme").test
 
   // Docs-only. Not on the published conduit artifact.
-  // ascent-conduit 0.10.0 is not on Central. 0.9.0 is the published bridge.
+  // ascent-conduit 0.10.0 depends on ascent-core 0.10.2.
   val mermoidAscent = Lib("rocks.earlyeffect", "mermoid-ascent", "0.2.0")
 
-  val ascent     = Lib("rocks.earlyeffect", "ascent-core", "0.10.1")
+  val ascent     = Lib("rocks.earlyeffect", "ascent-core", "0.10.2")
   val ascentCss  = ascent.mod("ascent-css")
-  val ascentHtml = Lib("rocks.earlyeffect", "ascent-html", "0.10.0")
-  val ascentJs   = Lib("rocks.earlyeffect", "ascent-js", "0.11.0")
-  val ascentConduit = Lib("rocks.earlyeffect", "ascent-conduit", "0.9.0")
+  val ascentHtml = Lib("rocks.earlyeffect", "ascent-html", "0.10.1")
+  val ascentJs   = Lib("rocks.earlyeffect", "ascent-js", "0.11.1")
+  val ascentConduit = Lib("rocks.earlyeffect", "ascent-conduit", "0.10.0")
     .excluding(
       ZipxExclude.org("io.github.russwyte"),
       ZipxExclude.org("rocks.earlyeffect", "conduit_3"),
