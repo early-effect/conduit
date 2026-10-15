@@ -87,8 +87,8 @@ val docsDogfoodSchemes = Seq(
   "io.github.russwyte" % "conduit_sjs1_3"            % "always",
   "rocks.earlyeffect"  % "conduit_3"                 % "always",
   "rocks.earlyeffect"  % "conduit_sjs1_3"            % "always",
-  // ascent-conduit 0.9.0 was published against ascent-core 0.9.0. Ctx is unchanged;
-  // the docs client forces the mermoid-ascent line (core 0.10.1, dom-types 0.11.1).
+  // ascent-conduit 0.10.0 depends on ascent-core 0.10.2. mermoid-ascent 0.2.0 still
+  // resolves an older core, css, and dom-types, so the docs client forces those.
   "rocks.earlyeffect"  % "ascent-core_3"             % "always",
   "rocks.earlyeffect"  % "ascent-core_sjs1_3"        % "always",
   "rocks.earlyeffect"  % "ascent-dom-types_3"        % "always",
