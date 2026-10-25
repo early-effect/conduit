@@ -35,7 +35,7 @@ object ConduitOptimizationSpec extends ZIOSpecDefault:
     suite("Conduit Dispatch Optimization")(
       test("should not notify listeners when model doesn't change") {
         // Use ActionHandler functions pattern
-        val testModel = Optics[TestModel]
+        val testModel   = Optics[TestModel]
         val testHandler = handle[TestModel, Int, Nothing](testModel(_.value)):
           case TestAction.Increment   => update(_ + 1)
           case TestAction.NoOp        => noChange
@@ -76,10 +76,11 @@ object ConduitOptimizationSpec extends ZIOSpecDefault:
           assertTrue(calls3 == 1) &&     // Same value did NOT trigger
           assertTrue(calls4 == 2) &&     // Different value triggered
           assertTrue(calls5 == 2)        // Multiple NoOps did NOT trigger
+        end for
       },
       test("should always update state even when model doesn't change") {
         // Use ActionHandler functions pattern
-        val testModel = Optics[TestModel]
+        val testModel   = Optics[TestModel]
         val testHandler = handle[TestModel, Int, Nothing](testModel(_.value)):
           case TestAction.NoOp => noChange
 
@@ -116,9 +117,10 @@ object ConduitOptimizationSpec extends ZIOSpecDefault:
           result3 <- ZIO.succeed(fastEq.eqv(model1, model4)) // Should be true (identical)
           result4 <- ZIO.succeed(fastEq.eqv(model1, model1)) // Should be true (reflexive)
         yield assertTrue(result1) && // Same value, different metadata = equal
-          assertTrue(!result2) &&    // Different value = not equal
-          assertTrue(result3) &&     // Identical = equal
-          assertTrue(result4)        // Reflexive = equal
+          assertTrue(!result2) && // Different value = not equal
+          assertTrue(result3) && // Identical = equal
+          assertTrue(result4) // Reflexive = equal
+        end for
       },
       test("given FastEq.fromVersion skips listeners when only non-version fields change") {
         val handler = handle[Versioned, Versioned, Nothing](Optics[Versioned]):
@@ -135,7 +137,6 @@ object ConduitOptimizationSpec extends ZIOSpecDefault:
           nBump  <- fired.get
           s      <- c.currentModel
         yield assertTrue(nQuiet == 0, nBump == 1, s.value == 99, s.version == 1L)
-        end for
       },
     )
 end ConduitOptimizationSpec

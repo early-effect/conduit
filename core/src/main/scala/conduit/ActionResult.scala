@@ -14,3 +14,4 @@ object ActionResult:
   /** Build a clean (no state change) [[ActionResult]] with optional follow-ups. */
   def clean[M, E](model: M, next: Dispatchable[M, E]*): ActionResult[M, E] =
     new ActionResult(model, next.toVector, dirty = false)
+end ActionResult

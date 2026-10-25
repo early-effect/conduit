@@ -32,7 +32,6 @@ trait FastEq[-A]:
     *   true if the values are considered equal
     */
   def eqv(lhs: A, rhs: A): Boolean
-end FastEq
 
 trait FastEqLowPriority:
   /** Used when no more-specific `given FastEq[A]` is in scope. */

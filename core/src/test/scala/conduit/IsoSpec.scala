@@ -43,21 +43,21 @@ object IsoSpec extends ZIOSpecDefault:
           val viaImap: Lens[CountBox, String] = base.imap(Iso(_.toString, _.toInt))
           val box                             = CountBox(7)
           assertTrue(viaXmap.get(box) == viaImap.get(box))
-          && assertTrue(viaXmap.set(box, "42") == viaImap.set(box, "42")),
+          && assertTrue(viaXmap.set(box, "42") == viaImap.set(box, "42"))
       ),
       // ─── lens laws on a faithful iso ────────────────────────────────────
       suite("lens laws — faithful Iso(Int, String) on numeric strings")(
         test("get-set / set-get / set-set hold for a domain where Int↔String round-trips exactly"):
           val asStr = Optics[CountBox](_.n).xmap(_.toString, _.toInt)
           val cases = List(0, 1, -1, 42, Int.MaxValue, Int.MinValue)
-          val laws = cases.map { n =>
+          val laws  = cases.map { n =>
             val box    = CountBox(n)
             val getSet = asStr.set(box, asStr.get(box)) == box
             val setGet = asStr.get(asStr.set(box, "100")) == "100"
             val setSet = asStr.set(asStr.set(box, "7"), "100") == asStr.set(box, "100")
             getSet && setGet && setSet
           }
-          assertTrue(laws.forall(identity)),
+          assertTrue(laws.forall(identity))
       ),
       // ─── identity-iso correctness ───────────────────────────────────────
       suite("identity iso")(
@@ -65,7 +65,7 @@ object IsoSpec extends ZIOSpecDefault:
           val base = Optics[CountBox](_.n)
           val same = base.imap(Iso.id[Int])
           val box  = CountBox(42)
-          assertTrue(same.get(box) == base.get(box)) && assertTrue(same.set(box, 7) == base.set(box, 7)),
+          assertTrue(same.get(box) == base.get(box)) && assertTrue(same.set(box, 7) == base.set(box, 7))
       ),
       // ─── caveat: non-faithful iso loses laws ────────────────────────────
       suite("caveat: non-faithful Iso")(
@@ -75,7 +75,7 @@ object IsoSpec extends ZIOSpecDefault:
           case class Box(s: String) derives Optics
           val lens = Optics[Box](_.s).xmap(_.toUpperCase, identity)
           val box  = Box("hello")
-          assertTrue(lens.get(lens.set(box, "hello")) != "hello"),
+          assertTrue(lens.get(lens.set(box, "hello")) != "hello")
       ),
       // ─── composition with focus + handler ───────────────────────────────
       suite("composition with handler DSL")(
@@ -89,7 +89,7 @@ object IsoSpec extends ZIOSpecDefault:
                   m => ZIO.succeed(ActionResult(asStr.set(m, s)))
           val initial = Model(0, "x")
           for r <- h.process(A.SetStr("42"), initial)
-          yield assertTrue(r.newModel.count == 42),
+          yield assertTrue(r.newModel.count == 42)
       ),
     )
 end IsoSpec

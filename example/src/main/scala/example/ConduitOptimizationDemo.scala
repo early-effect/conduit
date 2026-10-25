@@ -24,7 +24,7 @@ object ConduitOptimizationDemo extends ZIOAppDefault:
       listenerCallCount <- Ref.make(0)
 
       // Create ActionHandler using helper functions instead of manual pattern matching
-      counterModel = Optics[CounterModel]
+      counterModel   = Optics[CounterModel]
       counterHandler = handle[CounterModel, Int, IOException](counterModel(_.count)):
         case CounterAction.Increment       => update(_ + 1)
         case CounterAction.Decrement       => update(_ - 1)

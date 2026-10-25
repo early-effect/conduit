@@ -15,7 +15,6 @@ package conduit
   */
 final case class Iso[A, B](to: A => B, from: B => A):
   def reverse: Iso[B, A] = Iso(from, to)
-end Iso
 
 object Iso:
   /** The identity iso. */

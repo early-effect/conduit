@@ -38,7 +38,7 @@ object ListenerSpec extends ZIOSpecDefault:
       suite("Basic Operations")(
         test("should trigger listener on first notification") {
           for
-            ref <- Ref.make(0)
+            ref      <- Ref.make(0)
             listener <- Listener[SimpleModel, Nothing, Int](
               Optics[SimpleModel](_.value),
               value => ref.update(_ + value),
@@ -49,7 +49,7 @@ object ListenerSpec extends ZIOSpecDefault:
         },
         test("should track last value correctly") {
           for
-            ref <- Ref.make(List.empty[Int])
+            ref      <- Ref.make(List.empty[Int])
             listener <- Listener[SimpleModel, Nothing, Int](
               Optics[SimpleModel](_.value),
               value => ref.update(value :: _),
@@ -62,7 +62,7 @@ object ListenerSpec extends ZIOSpecDefault:
         },
         test("should not trigger listener for duplicate values") {
           for
-            ref <- Ref.make(0)
+            ref      <- Ref.make(0)
             listener <- Listener[SimpleModel, Nothing, Int](
               Optics[SimpleModel](_.value),
               _ => ref.update(_ + 1),
@@ -75,7 +75,7 @@ object ListenerSpec extends ZIOSpecDefault:
         },
         test("should trigger listener when value changes after duplicate") {
           for
-            ref <- Ref.make(List.empty[Int])
+            ref      <- Ref.make(List.empty[Int])
             listener <- Listener[SimpleModel, Nothing, Int](
               Optics[SimpleModel](_.value),
               value => ref.update(value :: _),
@@ -92,8 +92,8 @@ object ListenerSpec extends ZIOSpecDefault:
       suite("State Management")(
         test("should maintain proper state isolation between listeners") {
           for
-            ref1 <- Ref.make(0)
-            ref2 <- Ref.make(0)
+            ref1      <- Ref.make(0)
+            ref2      <- Ref.make(0)
             listener1 <- Listener[SimpleModel, Nothing, Int](
               Optics[SimpleModel](_.value),
               value => ref1.set(value),
@@ -112,7 +112,7 @@ object ListenerSpec extends ZIOSpecDefault:
         },
         test("should handle initial empty state correctly") {
           for
-            ref <- Ref.make(Option.empty[Int])
+            ref      <- Ref.make(Option.empty[Int])
             listener <- Listener[SimpleModel, Nothing, Int](
               Optics[SimpleModel](_.value),
               value => ref.set(Some(value)),
@@ -125,7 +125,7 @@ object ListenerSpec extends ZIOSpecDefault:
         },
         test("should update state atomically") {
           for
-            ref <- Ref.make(List.empty[Int])
+            ref      <- Ref.make(List.empty[Int])
             listener <- Listener[SimpleModel, Nothing, Int](
               Optics[SimpleModel](_.value),
               value => ref.update(value :: _),
@@ -154,7 +154,7 @@ object ListenerSpec extends ZIOSpecDefault:
         },
         test("should handle typed errors correctly") {
           for
-            ref <- Ref.make(List.empty[Either[TestError, Int]])
+            ref      <- Ref.make(List.empty[Either[TestError, Int]])
             listener <- Listener[SimpleModel, TestError, Int](
               Optics[SimpleModel](_.value),
               value =>
@@ -174,7 +174,7 @@ object ListenerSpec extends ZIOSpecDefault:
           // that would be a tight-loop replay. lastValue advances, so the next identical value is skipped.
           for
             callCount <- Ref.make(0)
-            listener <- Listener[SimpleModel, TestError, Int](
+            listener  <- Listener[SimpleModel, TestError, Int](
               Optics[SimpleModel](_.value),
               value =>
                 callCount.update(_ + 1) *>
@@ -191,7 +191,7 @@ object ListenerSpec extends ZIOSpecDefault:
       suite("Lens Integration")(
         test("should work with nested field access") {
           for
-            ref <- Ref.make(List.empty[String])
+            ref      <- Ref.make(List.empty[String])
             listener <- Listener[ComplexModel, Nothing, String](
               Optics[ComplexModel](_.nested.name),
               name => ref.update(name :: _),
@@ -207,7 +207,7 @@ object ListenerSpec extends ZIOSpecDefault:
         },
         test("should work with optional fields") {
           for
-            ref <- Ref.make(List.empty[Option[String]])
+            ref      <- Ref.make(List.empty[Option[String]])
             listener <- Listener[ComplexModel, Nothing, Option[String]](
               Optics[ComplexModel](_.optional),
               opt => ref.update(opt :: _),
@@ -225,7 +225,7 @@ object ListenerSpec extends ZIOSpecDefault:
         },
         test("should work with primitive field types") {
           for
-            ref <- Ref.make(List.empty[Boolean])
+            ref      <- Ref.make(List.empty[Boolean])
             listener <- Listener[ComplexModel, Nothing, Boolean](
               Optics[ComplexModel](_.nested.flag),
               flag => ref.update(flag :: _),
@@ -243,7 +243,7 @@ object ListenerSpec extends ZIOSpecDefault:
       suite("Factory Methods")(
         test("apply method should create functional listener") {
           for
-            ref <- Ref.make(0)
+            ref      <- Ref.make(0)
             listener <- Listener[SimpleModel, Nothing, Int](
               Optics[SimpleModel](_.value),
               value => ref.set(value),
@@ -261,8 +261,8 @@ object ListenerSpec extends ZIOSpecDefault:
         },
         test("unit listener should still track state correctly") {
           for
-            ref          <- Ref.make(0)
-            unitListener <- Listener.unit[SimpleModel, Int](Optics[SimpleModel](_.value))
+            ref            <- Ref.make(0)
+            unitListener   <- Listener.unit[SimpleModel, Int](Optics[SimpleModel](_.value))
             normalListener <- Listener[SimpleModel, Nothing, Int](
               Optics[SimpleModel](_.value),
               _ => ref.update(_ + 1),
@@ -280,7 +280,7 @@ object ListenerSpec extends ZIOSpecDefault:
       suite("Concurrent Access")(
         test("should handle concurrent notifications safely") {
           for
-            ref <- Ref.make(Set.empty[Int])
+            ref      <- Ref.make(Set.empty[Int])
             listener <- Listener[SimpleModel, Nothing, Int](
               Optics[SimpleModel](_.value),
               value => ref.update(_ + value),
@@ -297,7 +297,7 @@ object ListenerSpec extends ZIOSpecDefault:
           // Atomic Ref.modify in notify guarantees that only the first concurrent call invokes the listener;
           // every subsequent call sees lastValue already set to newValue and short-circuits.
           for
-            ref <- Ref.make(0)
+            ref      <- Ref.make(0)
             listener <- Listener[SimpleModel, Nothing, Int](
               Optics[SimpleModel](_.value),
               _ => ref.update(_ + 1),
@@ -311,7 +311,7 @@ object ListenerSpec extends ZIOSpecDefault:
         },
         test("should maintain consistency under concurrent state changes") {
           for
-            ref <- Ref.make(List.empty[Int])
+            ref      <- Ref.make(List.empty[Int])
             listener <- Listener[SimpleModel, Nothing, Int](
               Optics[SimpleModel](_.value),
               value => ref.update(value :: _),
@@ -337,7 +337,7 @@ object ListenerSpec extends ZIOSpecDefault:
           ) derives Optics
 
           for
-            ref <- Ref.make(0)
+            ref      <- Ref.make(0)
             listener <- Listener[LargeModel, Nothing, Int](
               Optics[LargeModel](_.id),
               _ => ref.update(_ + 1),
@@ -375,7 +375,7 @@ object ListenerSpec extends ZIOSpecDefault:
           ) derives Optics
 
           for
-            ref <- Ref.make(0)
+            ref      <- Ref.make(0)
             listener <- Listener[DeepNested, Nothing, Map[String, Int]](
               Optics[DeepNested](_.level1.level2.level3.data),
               _ => ref.update(_ + 1),

@@ -11,4 +11,3 @@ object Optics:
   final private[conduit] class Derived[M <: Product] extends Optics[M]
   private def deriveImpl[Model <: Product: Type](using Quotes): Expr[Optics[Model]] =
     '{ new Derived[Model] }
-end Optics

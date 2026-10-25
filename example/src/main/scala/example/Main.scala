@@ -15,7 +15,6 @@ object Pet:
     val nameHandler = handle[M, String, E](pet(_.name)):
       case ChangeName(name) => updated(name)
     ageHandler >> nameHandler // Combine the two handlers using orElse
-end Pet
 
 case class Model(counter: Int, pet: Pet = Pet("Fido", 2)) derives Optics
 

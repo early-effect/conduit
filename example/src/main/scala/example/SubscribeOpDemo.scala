@@ -31,7 +31,7 @@ object SubscribeOpDemo extends ZIOAppDefault:
   // changes start being logged. Logout dispatches an Unsubscribe to tear it down.
   // The listener captures a Ref so the demo can observe it firing.
   def appHandler(observed: Ref[List[Int]]): ActionHandler[App, ?, IOException] =
-    val countLens = app(_.count)
+    val countLens                                          = app(_.count)
     val userHandler: ActionHandler[App, User, IOException] =
       handle[App, User, IOException](user):
         case AppAction.Login(name) =>

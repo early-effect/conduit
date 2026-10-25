@@ -37,7 +37,6 @@ The dispatch loop and a running counter are on [Overview](overview.html).
         )
       ),
     )
-  end site
 
   override def layers: ZLayer[Any, Nothing, SiteBuilder] =
     EarlyEffectTheme.layers
@@ -70,7 +69,6 @@ The dispatch loop and a running counter are on [Overview](overview.html).
       else
         val path = Paths.get(line)
         Option.when(Files.isRegularFile(path))(path)
-  end readMarker
 
   private def walkTargetOut: Option[Path] =
     val outRoot = repoRoot.resolve("target/out")
@@ -86,8 +84,6 @@ The dispatch loop and a running counter are on [Overview](overview.html).
           .findFirst()
         found.toScala
       finally stream.close()
-    end if
-  end walkTargetOut
 
   private def repoRoot: Path =
     Iterator

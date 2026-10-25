@@ -12,4 +12,3 @@ object DocPages:
     CollectionLenses.doc,
     IsoPage.doc,
   )
-end DocPages
