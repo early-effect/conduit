@@ -95,7 +95,7 @@ object ConduitSpec extends ZIOSpecDefault:
           val seen = scala.collection.mutable.ArrayBuffer.empty[Int]
           val handlerWithDynamicSubscribe: ActionHandler[S, Int, Nothing] =
             handle[S, Int, Nothing](Optics[S](_.value)):
-              case A.Inc => update(_ + 1)
+              case A.Inc    => update(_ + 1)
               case A.Set(v) =>
                 m =>
                   for listener <- Listener[S, Nothing, Int](
@@ -172,7 +172,7 @@ object ConduitSpec extends ZIOSpecDefault:
           val c    = Conduit.make(S(0))(counterHandler[Nothing])
           val ref  = java.util.concurrent.atomic.AtomicInteger(0)
           val lens = Optics[S](_.value)
-          val _ = c.unsafe.subscribe(lens)(_ =>
+          val _    = c.unsafe.subscribe(lens)(_ =>
             ref.incrementAndGet(); ()
           )
           c.unsafe(A.Inc, A.Inc, A.Set(7))
@@ -186,7 +186,7 @@ object ConduitSpec extends ZIOSpecDefault:
           // subscribe[S](inline path: M => S). If this test compiles, the inline+macro composition works.
           val c   = Conduit.make(S(0))(counterHandler[Nothing])
           val ref = java.util.concurrent.atomic.AtomicInteger(0)
-          val _ = c.unsafe.subscribe(_.value)(_ =>
+          val _   = c.unsafe.subscribe(_.value)(_ =>
             ref.incrementAndGet(); ()
           )
           c.unsafe(A.Inc)

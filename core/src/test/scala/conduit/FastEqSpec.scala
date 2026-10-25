@@ -99,7 +99,7 @@ object FastEqSpec extends ZIOSpecDefault:
         test("FastEq.withReferenceEquality should try reference equality first") {
           case class TestModel(value: Int)
           val counter = java.util.concurrent.atomic.AtomicInteger(0)
-          val slowEq = FastEq.instance[TestModel] { (lhs, rhs) =>
+          val slowEq  = FastEq.instance[TestModel] { (lhs, rhs) =>
             counter.incrementAndGet()
             lhs.value == rhs.value
           }

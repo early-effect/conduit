@@ -25,7 +25,7 @@ object OptionalFastEqDemo extends ZIOAppDefault:
 
       // Create conduit using ActionHandler functions pattern
       simpleModelOptics = Optics[SimpleModel]
-      nameHandler = handle[SimpleModel, String, IOException](simpleModelOptics(_.name)):
+      nameHandler       = handle[SimpleModel, String, IOException](simpleModelOptics(_.name)):
         case SimpleAction.UpdateName(name) => updated(name)
 
       countHandler = handle[SimpleModel, Int, IOException](simpleModelOptics(_.count)):

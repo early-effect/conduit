@@ -29,7 +29,6 @@ object FocusSpec extends ZIOSpecDefault:
     case Deep(s: String)
     case TreeLeftValue(v: Int)
     case Boom
-  end A
 
   sealed trait Err
   case object Boomed extends Err

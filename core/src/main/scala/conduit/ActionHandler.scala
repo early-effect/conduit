@@ -24,11 +24,13 @@ def updated[M, V, E](newValue: V)(using lens: Lens[M, V]): ActionFunction[M, E] 
   *   }
   * }}}
   */
-inline def focus[M, V, W, E](using outer: Lens[M, V])(inline path: V => W)(
+inline def focus[M, V, W, E](using
+    outer: Lens[M, V]
+)(inline path: V => W)(
     body: Lens[M, W] ?=> ActionFunction[M, E]
 ): ActionFunction[M, E] =
   body(using outer(path))
-def noChange[M, E]: ActionFunction[M, E] = m => ZIO.succeed(ActionResult.clean(m))
+def noChange[M, E]: ActionFunction[M, E]                           = m => ZIO.succeed(ActionResult.clean(m))
 def noChange[M, E](next: Dispatchable[M, E]): ActionFunction[M, E] =
   m => ZIO.succeed(ActionResult.clean(m, next))
 def effectOnly[M, E](effect: M => IO[E, Unit]): ActionFunction[M, E] = m => effect(m).map(_ => ActionResult.clean(m))
@@ -91,7 +93,7 @@ private[conduit] class ComposedActionHandler[M, E](
     first: ActionHandler[M, ?, ? <: E],
     next: ActionHandler[M, ?, ? <: E],
 ) extends ActionHandler[M, M, E]:
-  private[conduit] val lens: Lens[M, M] = null
+  private[conduit] val lens: Lens[M, M]                         = null
   override private[conduit] val unhandled: AppAction[M, E] => E =
     a => first.unhandled.asInstanceOf[AppAction[M, E] => E](a)
   private val firstHandle =
@@ -100,14 +102,13 @@ private[conduit] class ComposedActionHandler[M, E](
     next.handle(using next.lens).asInstanceOf[PartialFunction[AppAction[M, E], ActionFunction[M, E]]]
   override private[conduit] def handle: Lens[M, ?] ?=> PartialFunction[AppAction[M, E], ActionFunction[M, E]] =
     firstHandle.orElse(nextHandle)
-end ComposedActionHandler
 
 /** Folded handler for fold composition. */
 private[conduit] class FoldedActionHandler[M, E](
     first: ActionHandler[M, ?, ? <: E],
     next: ActionHandler[M, ?, ? <: E],
 ) extends ActionHandler[M, M, E]:
-  private[conduit] val lens: Lens[M, M] = null
+  private[conduit] val lens: Lens[M, M]                         = null
   override private[conduit] val unhandled: AppAction[M, E] => E =
     a => first.unhandled.asInstanceOf[AppAction[M, E] => E](a)
   private val firstHandle =
@@ -116,11 +117,11 @@ private[conduit] class FoldedActionHandler[M, E](
     next.handle(using next.lens).asInstanceOf[PartialFunction[AppAction[M, E], ActionFunction[M, E]]]
   override private[conduit] def handle: Lens[M, ?] ?=> PartialFunction[AppAction[M, E], ActionFunction[M, E]] =
     new PartialFunction[AppAction[M, E], ActionFunction[M, E]]:
-      def isDefinedAt(a: AppAction[M, E]): Boolean = firstHandle.isDefinedAt(a) || nextHandle.isDefinedAt(a)
+      def isDefinedAt(a: AppAction[M, E]): Boolean        = firstHandle.isDefinedAt(a) || nextHandle.isDefinedAt(a)
       def apply(a: AppAction[M, E]): ActionFunction[M, E] =
         (firstHandle.lift(a), nextHandle.lift(a)) match
-          case (Some(f), None) => f
-          case (None, Some(n)) => n
+          case (Some(f), None)    => f
+          case (None, Some(n))    => n
           case (Some(f), Some(n)) =>
             (model: M) =>
               for
@@ -132,4 +133,3 @@ private[conduit] class FoldedActionHandler[M, E](
                 dirty = r1.dirty || r2.dirty,
               )
           case _ => sys.error("unreachable: guarded by isDefinedAt")
-end FoldedActionHandler

@@ -39,7 +39,7 @@ abstract class Conduit[M: FastEq as eq, E] private (private val stateRef: Ref[Co
   def run(terminate: Boolean = true): IO[E, Unit] =
     for
       state <- stateRef.get
-      _ <-
+      _     <-
         if terminate then
           // Drain to fixpoint: take + dispatch while items remain (including handler-emitted follow-ups).
           def loop: IO[E, Unit] =
@@ -58,8 +58,8 @@ abstract class Conduit[M: FastEq as eq, E] private (private val stateRef: Ref[Co
   /** Dispatch a single [[Dispatchable]]. */
   def dispatch(action: Dispatchable[M, E]): IO[E, Dispatchable[M, E]] =
     action match
-      case NoAction => ZIO.succeed(NoAction)
-      case Done     => ZIO.succeed(Done)
+      case NoAction     => ZIO.succeed(NoAction)
+      case Done         => ZIO.succeed(Done)
       case Subscribe(l) =>
         stateRef.update(c => c.copy(listeners = c.listeners + l.asInstanceOf[Listener[M, E, ?]])).as(action)
       case Unsubscribe(l) =>
@@ -80,7 +80,7 @@ abstract class Conduit[M: FastEq as eq, E] private (private val stateRef: Ref[Co
 
           // Only notify listeners if the model actually changed (performance optimization).
           nextState <- stateRef.get
-          _ <-
+          _         <-
             if modelChanged then ZIO.foreachDiscard(nextState.listeners)(_.notify(nextState.model))
             else ZIO.unit
 
@@ -146,7 +146,6 @@ object Conduit:
       get(c.run(terminate).catchAll(e => zio.ZIO.die(RuntimeException(s"Conduit error: $e"))))
     def currentModel: M =
       get(c.currentModel)
-  end Unsafe
 
   def make[M: FastEq, E](init: M)(h: => ActionHandler[M, ?, E]): Conduit[M, E] =
     get(apply(init)(h))

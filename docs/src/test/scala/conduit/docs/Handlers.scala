@@ -35,7 +35,7 @@ object Handlers extends DocSpec:
       case Op.ResetCount  => focus(_.count)(updated(0))
       case Op.SetLabel(s) => focus(_.label)(updated(s))
       case Op.TouchOnly   => focus(_.count)(noChange)
-      case Op.IncTwice =>
+      case Op.IncTwice    =>
         val lens = Optics[State](_.count)
         m => ZIO.succeed(ActionResult(lens.set(m, m.count + 1), Op.Inc))
 

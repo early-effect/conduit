@@ -7,14 +7,13 @@ trait Lens[M, V]:
   self =>
   def get(m: M): V
   def set(m: M, v: V): M
-  def >>[W](lens: Lens[V, W]): Lens[M, W] = compose(lens)
+  def >>[W](lens: Lens[V, W]): Lens[M, W]      = compose(lens)
   def compose[W](lens: Lens[V, W]): Lens[M, W] =
     new Compose[W](lens)
   private[conduit] class Compose[W](lens: Lens[V, W]) extends Lens[M, W]:
     def get(m: M): W       = lens.get(self.get(m))
     def set(m: M, w: W): M = self.set(m, lens.set(self.get(m), w))
   inline def apply[W](inline path: V => W): Lens[M, W] = new Compose[W](lensFor[V, W](path))
-end Lens
 
 private[conduit] inline def lensFor[M, V](inline path: M => V): Lens[M, V] = ${ lensForImpl('path) }
 
@@ -60,7 +59,6 @@ private def lensForImpl[M: Type, V: Type](path: Expr[M => V])(using Quotes): Exp
         case Ident(name)        => acc
         case _                  => report.errorAndAbort(s"Expected a chain of field selections, got ${term.show}")
     loop(term, Nil)
-  end selectChain
 
   @annotation.tailrec
   def copyLoop(obj: Term, fieldName: String, tail: List[String], value: Term, acc: Term => Term = identity): Term =
@@ -79,7 +77,6 @@ private def lensForImpl[M: Type, V: Type](path: Expr[M => V])(using Quotes): Exp
         value,
         term => acc(caseClass.applyCopy(fieldName, term)),
       )
-    end if
   end copyLoop
 
   def setExpr(fieldChain: Term): Expr[(M, V) => M] =
@@ -101,7 +98,6 @@ private def lensForImpl[M: Type, V: Type](path: Expr[M => V])(using Quotes): Exp
           ).asExpr.asInstanceOf[Expr[M]]
         }
       }
-    end if
   end setExpr
 
   val typeSymbol = TypeRepr.of[M].typeSymbol
@@ -111,7 +107,7 @@ private def lensForImpl[M: Type, V: Type](path: Expr[M => V])(using Quotes): Exp
   def make(fieldChain: Term) =
     '{
       new Lens[M, V]:
-        def get(m: M): V = $path(m)
+        def get(m: M): V       = $path(m)
         def set(m: M, v: V): M =
           ${
             setExpr(fieldChain)
@@ -124,17 +120,15 @@ private def lensForImpl[M: Type, V: Type](path: Expr[M => V])(using Quotes): Exp
       case Lambda(_, _)        => term
       case Inlined(_, _, expr) => findLambda(expr)
       case e                   => report.errorAndAbort(s"Expected a lambda or inlined lambda, got ${e.show}")
-  end findLambda
 
   findLambda(path.asTerm) match
     case Lambda(_, fieldChain) =>
       fieldChain match
         case _: Select => make(fieldChain)
-        case e =>
+        case e         =>
           report.errorAndAbort(s"Only simple field accessors are supported, e.g., _.field got ${e.show}")
     case e =>
       report.errorAndAbort(
         s"Only simple field accessors are supported, e.g., _.field got ${e.show(using Printer.TreeStructure)}"
       )
-  end match
 end lensForImpl

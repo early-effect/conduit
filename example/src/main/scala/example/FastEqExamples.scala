@@ -96,7 +96,7 @@ object FastEqExamples extends ZIOAppDefault:
 
       // Use ActionHandler functions pattern
       largeModelOptics = Optics[LargeCollectionModel]
-      largeHandler = handle[LargeCollectionModel, List[String], IOException](largeModelOptics(_.items)):
+      largeHandler     = handle[LargeCollectionModel, List[String], IOException](largeModelOptics(_.items)):
         case ModelAction.UpdateLargeCollection(items) => updated(items)
 
       conduit1 <- Conduit(largeModel)(largeHandler)
@@ -119,7 +119,7 @@ object FastEqExamples extends ZIOAppDefault:
 
       // Use ActionHandler functions pattern
       versionedModelOptics = Optics[VersionedModel]
-      versionedHandler = handle[VersionedModel, Long, IOException](versionedModelOptics(_.version)):
+      versionedHandler     = handle[VersionedModel, Long, IOException](versionedModelOptics(_.version)):
         case ModelAction.IncrementVersion => update(_ + 1)
 
       conduit2 <- Conduit(versionedModel)(versionedHandler)
@@ -140,7 +140,7 @@ object FastEqExamples extends ZIOAppDefault:
 
       // Use ActionHandler functions pattern
       hashedModelOptics = Optics[HashedModel]
-      hashedHandler = handle[HashedModel, String, IOException](hashedModelOptics(_.content)):
+      hashedHandler     = handle[HashedModel, String, IOException](hashedModelOptics(_.content)):
         case ModelAction.UpdateHashed(content) => updated(content)
 
       conduit3 <- Conduit(hashedModel)(hashedHandler)
@@ -176,7 +176,7 @@ object FastEqExamples extends ZIOAppDefault:
       _ <- Console.printLine("\n=== Custom Equality Strategies ===")
 
       // Show how library users can define their own FastEq instances
-      now <- Clock.currentTime(java.util.concurrent.TimeUnit.MILLISECONDS)
+      now     <- Clock.currentTime(java.util.concurrent.TimeUnit.MILLISECONDS)
       conduit <- Conduit(CustomModel("test", now))(
         handle[CustomModel, IOException]:
           case ModelAction.UpdateCustom(data, timestamp) =>

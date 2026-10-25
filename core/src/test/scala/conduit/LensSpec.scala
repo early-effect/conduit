@@ -98,7 +98,7 @@ object LensSpec extends ZIOSpecDefault:
         ),
         suite("nested operations")(
           test("deeply nested field access"):
-            val lens = Optics[ComplexNested](_.a.b.c.d.value)
+            val lens   = Optics[ComplexNested](_.a.b.c.d.value)
             val nested = ComplexNested(
               A(B(C(D(42), "test"), true), 10),
               "root",
@@ -107,7 +107,7 @@ object LensSpec extends ZIOSpecDefault:
             assertTrue(lens.set(nested, 100).a.b.c.d.value == 100)
           ,
           test("partial nested modification preserves other fields"):
-            val lens = Optics[ComplexNested](_.a.b.flag)
+            val lens   = Optics[ComplexNested](_.a.b.flag)
             val nested = ComplexNested(
               A(B(C(D(42), "test"), true), 10),
               "root",
@@ -269,7 +269,7 @@ object LensSpec extends ZIOSpecDefault:
         ,
         test("nested lens preserves all intermediate types"):
           val complexLens = Optics[ComplexNested](_.a.b.c.data)
-          val nested = ComplexNested(
+          val nested      = ComplexNested(
             A(B(C(D(42), "original"), true), 10),
             "root",
           )

@@ -18,12 +18,10 @@ final case class Listener[M, E, S: FastEq as eq] private[conduit] (
     val newValue = cursor.get(newModel)
     for
       prev <- lastValueRef.modify(p => (p, Some(newValue)))
-      _ <- prev match
+      _    <- prev match
         case Some(a) if eq.eqv(a, newValue) => ZIO.unit
         case _                              => listener(newValue)
     yield ()
-  end notify
-end Listener
 
 object Listener:
   def apply[M, E, S: FastEq](cursor: Lens[M, S], listener: S => IO[E, Unit]): UIO[Listener[M, E, S]] =
@@ -32,3 +30,4 @@ object Listener:
 
   def unit[M, S: FastEq](cursor: Lens[M, S]): UIO[Listener[M, Nothing, S]] =
     apply(cursor, _ => ZIO.succeed(()))
+end Listener

@@ -86,7 +86,7 @@ object CollectionLensSpec extends ZIOSpecDefault:
         ,
         // ── lens laws ─────────────────────────────────────────────────
         test("law: get-set holds for in-range, equal-size, past, negative, empty"):
-          val xs = List(10, 20, 30)
+          val xs    = List(10, 20, 30)
           val cases = List(
             (Optics[ListBox](_.xs).at(0), ListBox(xs)),
             (Optics[ListBox](_.xs).at(1), ListBox(xs)),
