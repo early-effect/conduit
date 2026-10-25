@@ -5,7 +5,7 @@ object MyVersions extends ZipxVersions:
   val sbt: SbtVersion     = SbtVersion("2.1.0-RC1")
   val scala: ScalaVersion = ScalaVersion("3.9.0")
 
-  val release = ShipGroup("conduit", "0.0.8")("core")
+  val release = ShipGroup("conduit", "0.1.0")("core")
 
   val zio         = Lib("dev.zio", "zio", "2.1.27")
   val zioStreams  = zio.mod("zio-streams")
